@@ -1,0 +1,383 @@
+				FUNCIONAMIENTO DEL CODIGO
+
+const byte FILA = 4; Define las dimensiones de la matriz del teclado (FILAS)
+const byte COl = 4;  Define las dimensiones de la matriz del teclado (COLUMNAS)
+
+---------------------------------
+char botones[FILA][COL] = {	|
+  {'1','2','3','A'},		|
+  {'4','5','6','B'},		|----> Define cada boton de las filas y las columnas
+  {'7','8','9','C'},		|      como un caracter
+  {'*','0','#','D'}		|
+};				|
+---------------------------------
+
+byte pinFila[FILA] = {FILA1, FILA2, FILA3, FILA4};  ----> DEFINE PARA CADA FILA DEL TECLADO EL PIN CORRESPONDIENTE
+byte pinCol[COL] = {COL1, COL2, COL3, COL4};  ----------> DEFINE PARA CADA COLUMNA DEL TECLADO EL PIN CORRESPONDIENTE
+
+Keypad teclado = Keypad(makeKeymap(botones), pinFila, pinCol, FILA, COL); 
+ 
+ ●  makeKeymap(botones): Define las teclas del teclado matricial y su disposición.
+ ●  pinFila: El arreglo que contiene los pines de las filas del teclado matricial.
+ ●  pinCol: El arreglo que contiene los pines de las columnas del teclado matricial.
+ ●  FILA: El número de filas del teclado matricial (en este caso, 4).
+ ●  COL: El número de columnas del teclado matricial (también 4 en este caso).
+
+La variable:
+   
+ ●  unsigned long --> Es un tipo de dato utilizado para almacenar números enteros sin signo que ocupan 4 bytes (32 bits).
+ ●  bool -----------> Es un tipo de dato utilizado para almacenar TRUE o FALSE (1 , 0) V o F
+ ●  long -----------> Es un tipo de dato utilizado para almacenar numeros enteros tanto positivos como negativos (32 bits)
+ ●  sting ----------> Cadena de caracteres
+
+La funcion:
+
+ ●  void ---------> Quiere decir que ejecuta lo que esta en ella pero no devuelve ningun valo al lugar desde donde fue llamada.
+ ●  void setup() -> En la función setup(), se suelen inicializar y configurar todos los periféricos y pines que se van a utilizar 
+	            durante la ejecución del programa. 
+ ●  void loop() --> Es una funcion que hace que se ejecute repetidamente el codigo que se encuentra dentro de esta funcion (BUCLE).
+ ●  millis() -----> Es una funcion que devuelve el tiempo transcurrido en milisegundos desde que se inicio el Programa an el arduino.
+ 
+
+//-----Variables Ecuación---------
+int resultadoEsperado = 0;       |
+String respuestaUsuario = "";    |
+int x = 0;   			 |
+int y = 0; 			 |
+//-----Variables Ecuación---------
+
+//-----Sensor---------------------
+bool usuarioPresente = false;    |
+unsigned long tiempoInicial = 0; |
+//-----Sensor---------------------
+	
+			
+PARTE DEL CODIGO DEL VOID LOOP():
+
+ char tecla = teclado.getKey();  ----> Lee la tecla presionada en el teclado numérico y almacena su valor en la variable "tecla".
+ millisAlarma = millis(); -----------> Obtiene el tiempo transcurrido en milisegundos desde que Arduino se inició y lo asigna a millisAlarma.
+ 
+ 
+ if (millisAlarma - millisAntesAlarma >= 2000) {    |
+    millisAntesAlarma = millisAlarma;               |---> Actualiza millisAntesAlarma cada 2000 milisegundos (2 segundos), asegurando que se 
+ }						    |     mantenga sincronizado con el tiempo actual.
+ 
+
+ millisAhora = millis();				       |
+							       |
+ if ((millisAhora - millisAntes >= 1000) && (!setSegundo)) {   |---> millisAntes = millis() Inicia a la vez que millisAhora() , pero millisAhora() se
+    segundo++;						       |                   va acutualizando mientras el loop este funcionando por ende, 
+    millisAntes = millisAhora;				       |		   Esta parte de la condición verifica si ha transcurrido al menos 1000
+    alarmaTexto = !alarmaTexto;				       |		   milisegundos (1 segundo) desde la última vez que se actualizó 
+							       |		   millisAntes con millisAhora.
+    if (segundo >= 60) {				       |
+        segundo = 0;					       |---> alarmaTexto = !alarmaTexto; Cambia de true a false y cuando entra en el case(8) que
+        minuto++;					       |		   es la alarma activada hace que parpadee el texto de ALARMA 
+							       |
+        if (minuto >= 60) {   				       |
+            minuto = 0;					       |
+            hora++;					       |
+            if (hora >= 24) hora = 0;			       |
+        }						       |
+    }							       |
+ }							       |
+
+
+
+ 
+  if(alarma 		 && // si la alarma esta activada,		|---> Si la alarma esta activada o desactivada
+     !setSegundo	 && // si no se estan ajustando los segundos	|---> Que no se active la alarma mientras se esta ajustando los segundos
+    (hora == hAlarma)    && // y la hora es correcta			|
+    (minuto == mAlarma)  &&						|
+    (segundo == sAlarma)) {						|
+    lcd.clear();							|---> Limpia la pantalla y borra todo texto
+    millisAlarma=0;							|---> Se reinicia el contador del tiempo de la alarma
+    estado=8; //suena la alarma						|---> Y se establece el estado 8 (Osea entra al case(8) y suena la alarma)
+  }									|
+
+
+
+MAQUINA DE ESTADOS:
+
+//------Maquina de estados------			|
+							|
+  switch (estado) {					|----> Empieza el switch que contiene cada "case" en particular
+    case 0: // Standby (Muestra la hora actual)		|
+      lcd.setCursor(4,0);				|----> Se coloca el cursor en la pantalla lcd en la fila 0 columna 4
+      if(hora < 10) lcd.print("0");			|----> Esta línea verifica si el valor de hora es menor que 10. Si es así, se imprime en el LCD el carácter "0". 
+							|      Esto asegura que siempre se muestren dos dígitos para la hora. Por ejemplo, si la hora es 9, se mostrará "09".
+      lcd.print(hora);					|----> Después de imprimir el "0" si es necesario, se imprime el valor numérico de hora. Si hora es menor que 10, se 
+							|      imprimirá como "09", de lo contrario se imprimirá como "10", "11", etc.
+      lcd.print(":");					|
+      if(minuto < 10) lcd.print("0");			|
+      lcd.print(minuto);				|
+      lcd.print(":");					|
+      if(segundo < 10) lcd.print("0");			|
+      lcd.print(segundo);				|
+      							|	
+       if (tecla != NO_KEY) {				|----> Esta línea verifica si la variable "tecla" no es igual a "NO_KEY". Esto sugiere que "tecla" contiene alguna tecla o 
+							|      comando que ha sido presionado o activado. "NO_KEY" probablemente sea una constante definida para indicar que ninguna tecla ha sido presionada.
+         						|
+        switch (tecla) {				|----> Dentro del bloque "if", hay un "switch" que evalúa el valor de "tecla". Dependiendo del valor de "tecla", se ejecutará uno de los casos (case) definidos dentro del switch.
+        						|  
+	case 'A': // Asignar hhmmss			|----> Caso asignar "HORA"
+            lcd.clear();				|----> Limpia la pantalla lcd
+            estado++;					|----> Avanza del estado 0 al estado 1 (case 0  a  case 1)
+            break;					|----> Sale del bucle switch y entra al estado 1 (case 1)
+          						|
+	case 'B': // Asignar hhmmss alarma		|----> Caso asignar "ALARMA"
+            lcd.clear();				|----> Limpia la pantalla lcd
+            estado = 4;					|----> Entra del estado 0 al estado 4 (case 0  a  case 4)
+            break;					|----> Sale del bucle switch y entra al estado 4 (case 4)
+          						|
+	case 'C': // Activar/desactivar alarma		|----> Caso activar/desactivar "ALARMA"
+            alarma = !alarma;				|----> Desactiva y activa la alarma cambiando la variable alarma por true o false (alarma = false ----> lo cambia a true o viceversa)
+            lcd.clear();				|----> Limpia la pantalla lcd
+            estado = 7;					|----> Entra del estado 0 al estado 7 (case 0  a  case 7)
+            break;					|----> Sale del bucle switch y entra al estado 7 (case 7)
+        }						|
+      }							|
+      break;						|----> Sale del switch completo ( switch (estado) )
+
+
+ 
+ case 1: // Asignar hora				|
+      							|
+      lcd.setCursor(0,0);				|----> Posiciona el cursor en la fila 1 y columna 1 
+      lcd.print("Asignar hora:");			|----> Imprime en la patalla el texto colocado
+      lcd.setCursor(0,1);				|----> Posiciona el cursor en la fila 2 y columna 1
+      							|__
+      if(hora < 10) lcd.print("0");			   |-> Asegura que se imprima la hora con dos dígitos, 
+      lcd.print(hora);					 __|   añadiendo un "0" si la hora es menor que 10.
+ 							|     
+      lcd.print(":");					|----> Imprime ":" para separar hs y m
+      if(minuto < 10) lcd.print("0");			|
+      lcd.print(minuto);				|
+      lcd.print(":");					|----> Imprime ":" para separar m y s
+      if(segundo < 10) lcd.print("0");			|
+      lcd.print(segundo);				|
+      							|
+      							|
+      if (tecla != NO_KEY) {				|
+        switch (tecla) {				|
+          case 'A':					|----> Caso tecla A (Para poder retroceder en la configuracion de la hora)
+            lcd.clear();				|----> Limpia la pantalla lcd
+            estado--;					|----> Retrocede del estado 1 al estado 0 (case 1  a  case 0)  ----> "En general retrocede estados (cases)"
+            break;					|----> Sale del bucle switch y entra al estado 0 (case 0)
+          						|
+	  case '0'...'9':				|----> Si la tecla presionada es un dígito del '0' al '9', se ejecuta lo siguiente:
+            hora = (hora * 10) + (tecla - '0');		|----> Esto multiplica el valor actual de hora por 10 y luego suma el valor numérico de la tecla presionada
+							|      ('0'-'9'). Esto permite ingresar números de dos dígitos para configurar la hora.
+            if(hora >= 24) hora = 0;			|----> Si el valor de hora es mayor o igual a 24 (ya que se asume formato de 24 horas), se reinicia hora a 0 para reiniciar el ciclo del día.     
+            break;					|----> Sale del bucle switch
+          						|
+	  case 'D':					|----> Caso tecla D (Para poder avanzar en la configuracion de la hora)
+            lcd.clear();				|----> Limpia la pantalla lcd
+            estado++;					|----> Avanza del estado 1 al estado 2 (case 1   a  case 2) ----> "En general avanza estados (cases)"
+            break;					|----> Sale del bucle switch
+        }						|
+      }							|
+      break;						|----> Sale del IF 
+
+
+
+ case 2: // Asignar minuto					 |
+     								 |_
+      lcd.setCursor(0,0);					   |
+      lcd.print("Asignar minuto:");				   |
+      lcd.setCursor(0,1);				  	   |
+      if(hora < 10) lcd.print("0");				   |
+      lcd.print(hora);						   |----> Hace lo mismo que el primer caso (case 1)
+      lcd.print(":");						   |
+      if(minuto < 10) lcd.print("0");				   |
+      lcd.print(minuto);					   |
+      lcd.print(":");						   |		 
+      if(segundo < 10) lcd.print("0");				   |
+      lcd.print(segundo);					  _|
+      								 |
+     								 |
+      if (tecla != NO_KEY) {					 |
+        switch (tecla) {					 |
+          case 'A':						 |
+            lcd.clear();					 |
+            estado--;						 |
+            break;						 |
+          							 |
+	  case '0'...'9':					 |
+            minuto = (minuto * 10) + (tecla - '0');		 |
+            if(minuto >= 60) minuto = 0;			 |------> Si el valor de minuto es mayor o igual a 60, se reinicia los minutos a 0 y aumenta una hora.
+            break;						 |
+          							 |
+	  case 'D': 						 |
+            setSegundo=true; // hace que no pasen los segundos	 |------> La variable empieza definida como (setSegundo = false como "bool"), Al estar en true hace que los segundos no pasen --> Pasa al estado 3 (case 3) y para los segundos
+            lcd.clear();					 |
+            estado++;						 |
+            break;						 |
+        }							 |
+      }								 |
+      break;							 |
+
+
+
+    case 3: // Asignar segundo					 |
+      								 |_
+      lcd.setCursor(0,0);					   |
+      lcd.print("Asignar segundo:");				   | 
+      lcd.setCursor(0,1);					   |
+      if(hora < 10) lcd.print("0");				   |
+      lcd.print(hora);						   |
+      lcd.print(":");						   |----> Hace lo mismo que el primer caso (case 1)
+      if(minuto < 10) lcd.print("0");				   |
+      lcd.print(minuto);					   |
+      lcd.print(":");						   |
+      if(segundo < 10) lcd.print("0");				   |
+      lcd.print(segundo);					  _|
+      								 |
+     								 |
+      if (tecla != NO_KEY) {					 |
+        switch (tecla) {					 |
+          case 'A':						 |
+            lcd.clear();					 |
+            setSegundo=false; // vuelven a pasar los segundos	 |-----> Hace que cuando vuelvas un estado atras (Ej: aca pasa del estado 3 al estado 2 (case 3  a  case 2)), vuelven a pasar los segundos al configurar los minutos
+            estado--;						 |
+            break;						 |
+          case '0'...'9':					 |
+            segundo = (segundo * 10) + (tecla - '0');		 |
+            if(segundo >= 60) segundo = 0;			 |
+            break;						 |
+          case 'D':						 |
+            lcd.clear();					 |
+            setSegundo=false; // idem				 |-----> Cuando terminas de configurar los segundos y confirmas con la tecla "D" los segundos vuelven a pasar
+            estado = 0;						 |
+            break;						 |
+        }							 |
+      }								 |
+      break;							 |
+
+      
+____________________
+ 		    |
+    case 4:	    |
+		    |
+    case 5:	    |-----> Hace lo mismo que en el (case 1, 2 , 3)
+		    |
+    case 6:	    |
+____________________|
+
+
+    case 7: // Activar/desactivar alarma				 |
+     									 |
+      if (alarma) {							 |
+        lcd.setCursor(0,0);						 |
+        lcd.print("Alarma ON a las:");					 |
+        lcd.setCursor(4,1);						 |
+        if(hAlarma < 10) lcd.print("0");				 |
+        lcd.print(hAlarma);						 |
+        lcd.print(":");							 |
+        if(mAlarma < 10) lcd.print("0");				 |
+        lcd.print(mAlarma);						 |
+        lcd.print(":");							 |
+        if(sAlarma < 10) lcd.print("0");				 |
+        lcd.print(sAlarma);						 |
+      } else {								 |
+        lcd.setCursor(3,0);      					 |
+        lcd.print("Alarma OFF");					 |
+      }									 |
+      									 |
+      									 |
+      if (((tecla != NO_KEY) && (tecla == 'C' || tecla == 'D'))) {	 |----> Cuando se apreta la tecla "C" o "D" vuelve al estado = 0
+        lcd.clear();							 |
+        estado = 0;							 |
+      }									 |
+      break;								 |
+
+
+
+    case 8: // Alarma sonando											|											 
+      														|
+      if (alarmaTexto) {											|  
+        lcd.setCursor(5,0);											|
+        lcd.print("ALARMA");											|
+      } else {													|
+        lcd.clear();												|
+      }														|
+      														|
+     //tapa tapita tapon, esto seria un switch									|
+    	tone(BUZZER, G, 250);											|----> Si la condición if es verdadera (es decir, ha pasado suficiente tiempo), 
+        if((millisAlarma - millisAntesAlarma >= 250)) tone(BUZZER, D, 100);					|      se ejecuta el comando tone(BUZZER, tono, duracion) correspondiente para 
+    	if((millisAlarma - millisAntesAlarma >= 375)) tone(BUZZER, D, 100);					|      reproducir el siguiente tono en el zumbador durante la duración especificada.
+   	if((millisAlarma - millisAntesAlarma >= 500)) tone(BUZZER, E, 250);					|
+    	if((millisAlarma - millisAntesAlarma >= 750)) tone(BUZZER, D, 125);					|
+    	if((millisAlarma - millisAntesAlarma >= 1250)) tone(BUZZER, FS, 250);					|
+    	if((millisAlarma - millisAntesAlarma >= 1500)) tone(BUZZER, G, 250);					|
+      														|
+      // Esperar que el usuario esté presente frente al sensor por 6 segundos					|
+      if (!usuarioPresente) {											|----> Si el usuario esta presente, el sensor se activa y emite un pulso que lo convierte
+        // Activar sensor y medir distancia									|      en una medicion en pulgadas
+        digitalWrite(SENSOR_OUT, LOW);										|
+        delayMicroseconds(2);											|
+        digitalWrite(SENSOR_OUT, HIGH);										|
+        delayMicroseconds(10);											|
+        digitalWrite(SENSOR_OUT, LOW);										|
+        long duration = pulseIn(SENSOR_IN, HIGH);								|
+        distanceInch = duration * 0.0133 / 2;  // Formula para convertir la duracion del pulso en pulgadas	|
+        													|
+        // Si el usuario está a menos de 16 pulgadas (son 40cm aprox.)						|
+        if (distanceInch <= 16) {										|----> Si el usuario esta a menos de 16 pulgadas (40cm aprox.)
+          usuarioPresente = true;										|      empieza a tomar el tiempo en millis, el tiempo inicial seria el tiempo en el que entra 
+          tiempoInicial = millis();										|      en el sensor y millis() seria el tiempo final cuando sale del sensor 
+        }													|
+      }														|
+      														|
+      // Cuando este parado durante 6 seg muestra la ecuacion 							|
+      if (usuarioPresente && (millis() - tiempoInicial >= 6000)) {						|----> Si el usuario esta presente y millis da mayor a 6 segundos genera la cuenta aleatoria
+        // Generar ecuación aleatoria (x * y) + x								|
+        x = random(1, 101); // x del 1 al 100									|----> Genera numero random para X
+        y = random(1, 11);  // y del 1 al 10									|----> Genera numero random para Y
+        resultadoEsperado = (x * y) + x;									|----> Calcula el resultado de la operacion sin monstrarlo
+        													|
+        // Mostrar ecuación en la pantalla LCD									|
+        lcd.clear();												|
+        lcd.print(x);												|
+        lcd.print(" * ");											|
+        lcd.print(y);												|
+        lcd.print(" + ");											|
+        lcd.print(x);												|
+        lcd.setCursor(0, 1);											|
+        lcd.print(" = ?");											|
+        													|
+        // Esperar a que el usuario ingrese una respuesta							|
+        respuestaUsuario = "";											|----> Espera la respuesta del usuario con una variable vacia
+        tecla = NO_KEY;												|----> NO_KEY --> Constante que indica que no esta precionada ninguna tecla, y se guarda en la variable "tecla"
+        while (tecla != '#') {											|----> Minetras la tecla no sea "#" no sale del bucle while
+          tecla = teclado.getKey();										|----> Detecta las teclas del teclado matricial
+          if (tecla >= '0' && tecla <= '9') {									|----> Si la tecla esta entre 0 y 9 las teclas presionadas se guardan en la variable "respuestaUsuario"
+            respuestaUsuario += tecla;										|      y lo imprime en el lcd mostrando la respuesta
+            lcd.setCursor(3, 1);										|
+            lcd.print(respuestaUsuario);									|
+          }													|
+        }													|
+        													|
+        // Comprobar si la respuesta es correcta								|
+        if (respuestaUsuario.toInt() == resultadoEsperado) {							|----> Comprueba el resultado ingresado por el usuario con el previamente calculado y si son iguales
+          alarma = false; // Desactivar alarma									|      la variable "alarma" pasa a ser false desactivandola
+          lcd.clear();												|
+          lcd.print("Correcto!");										|
+          delay(2000); // Mostrar mensaje por 2 segundos							|----> Muestra el mensaje "Correcoto!" por 2 segundos,
+          lcd.clear();												|      limpia el lcd y vuelve al estado 0 "Standby"
+          estado = 0; // Volver al estado de Standby								|
+        } else {												|	
+          lcd.clear();												|----> Sino si la respuesta es incorrecta,
+          lcd.print("Incorrecto!");										|      Imprime el mensaje "Incorrecto!" por 2 segundos,
+          delay(2000); // Mostrar mensaje por 2 segundos							|      
+          usuarioPresente = false; // Reiniciar la espera del usuario						|----> Vuelve a poner la variable "usuarioPresente" como false esperando a ser detectado de nuevo por 
+          estado = 8; // Volver a mostrar la alarma y esperar al usuario					|      sensor para volver a intentarlo
+        }													|----> Y lo devuelve al estado 8 De la alarma sonando.
+      }														|
+      break;													|
+  }														|
+  														|
+  delay(50); //SAQUENLO (el miercoles)										|---> delay de los segundos (Para que los segundos pasen bien tiene que ser 1000)
+}														|
+
+						    
